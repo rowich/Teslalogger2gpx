@@ -5,9 +5,6 @@ if (-not (Test-Path $Importfile)) {
   exit 1
 }
 
-Write-Host "Start-Date pattern: $DateStart"
-Write-Host "  End-Date pattern: $DateEnd"
-
 $Element = @()
 
 #
@@ -43,7 +40,7 @@ function process-line([string] $line) {
     while ($true) {
         $lengthstatus = $lengthstart-$line.Length
         if (($lengthstatus % 100) -ne ($lengthlaststatus % 100)) {
-            Write-Progress -Activity "Deconstrunction line of data" -PercentComplete ($lengthstatus / $lengthstart * 100) -ParentId 1 -Id 2
+            Write-Progress -Activity "Deconstructing line of data" -PercentComplete ($lengthstatus / $lengthstart * 100) -ParentId 1 -Id 2
             $lengthlaststatus = $lengthlaststatus
         }
 
@@ -76,10 +73,12 @@ function process-line([string] $line) {
 #
 
 # read data file and filter for SQL "insert into" commands
+Write-Host "Reading data from $Importfile into memory"
 $dataset = (Get-Content $Importfile -Encoding UTF8 | ? { $_ -like "INSERT INTO *"})
+Write-Host "Reading completed."
 $datacounter = 0
 foreach($line in  $dataset) {
-    Write-Progress -Activity "Processing data" -PercentComplete $datacounter / $dataset.count * 100 -ParentId -1 -id 1
+    Write-Progress -Activity "Processing data file $Importfile" -status "from $DateStart to $DateEnd" -PercentComplete (++$datacounter / $dataset.count * 100) -id 1
 
     # we had issues to initially filter for "insert into `pos`" command. therefore do the second check here
     if ($line.Substring(0,20) -like "*pos*") {

@@ -10,7 +10,7 @@
  - Parameter "-Datestart" to specify the start date of the extract. Format is "yyyy-mm-dd", default is "2000-01-01"
  - Parameter "-Dateend" to specify the end date of the extract. Format is "yyyy-mm-dd", default is "9999-99-99"
  
- use "Write-Teslalogger-GPX.ps1" to convert the CSV file into GPX file format. Reads ".\teslalogger.gpx.csv" and created "teslalogger.gpx"
+ use "Write-Teslalogger-GPX.ps1" to convert the CSV file into GPX file format. Reads ".\teslalogger.gpx.csv" and creates "teslalogger.gpx"
  
  no database interface so far.
  MariaDB SQL backup dump file must be extracted before it can be used. "Extract" script must be used with parameter "-Importfile" to specify the file
