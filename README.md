@@ -1,7 +1,8 @@
 # Teslalogger2gpx
  Extract GPS trip data from the Teslalogger database and convert to GPX file format
 
- v0.9 - (dramatically) speed improvement to find start date in data 
+ v0.9 - (dramatically) speed improvement to find start date in data
+ 
  v0.5 - speed and usage optimised release
         only one script, no temporary CSV file, much faster
  
