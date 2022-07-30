@@ -1,4 +1,4 @@
-﻿param([Parameter(Mandatory=$true)][string] $Importfile, [string] $DateStart = "2000-01-01", [string] $DateEnd = "9999-99-99", [string] $Exportfile = "teslalogger.gpx")
+﻿param([Parameter(Mandatory=$true)][string] $Importfile, [string] $DateStart = "2020-01-01", [string] $DateEnd = "2100-01-01", [string] $Exportfile = "teslalogger.gpx")
 
 if (-not (Test-Path $Importfile)) {
   Write-Host "Import file $Importfile not found"
@@ -19,6 +19,31 @@ function process-line([string] $line) {
     $Param = @()
     $Element = @()
     $Splitdata = $line.Split("),(")
+
+    #
+    # Check if line of data could contain relevant data
+    # Searching for last node and check the date if at least the start date
+    #
+    Write-Progress -Activity "Searching for start date" -Status "$DateStart" -PercentComplete 0 -ParentId 1 -Id 2
+    For($i = $Splitdata.Count-1;$i--;$i -ge 0) {
+        $checkdate = $null
+        try {
+            #Write-Host $Splitdata[$i]
+            $a = [string] $Splitdata[$i].Replace("'","")
+            if ($a.Length -ge 20 -and $a[4] -eq "-" -and $a[7] -eq "-") {
+                $checkdate = [datetime] $a
+                if ($a -le $DateStart) {
+                    return $Element
+                }
+                break
+            }
+        } catch { }
+    }
+
+    #
+    # Found line with probably valid data
+    # now building node elements
+    #
     $Counter = 0
     foreach($value in $Splitdata) {
         $Counter++
@@ -33,7 +58,7 @@ function process-line([string] $line) {
                 if ($param1 -gt $DateEnd) { break }
                 if ($param1 -ge $DateStart) {
                     $Element += [PSCustomObject] [ordered] @{ "Date" = $param1; "Lat" = $param[2]; "Lng" = $param[3]; "Alt" = $param[10] }
-                    if ($element.Count % 100 -eq 0) { write-host "." -NoNewline -ForegroundColor Gray }
+                    #if ($element.Count % 100 -eq 0) { write-host "." -NoNewline -ForegroundColor Gray }
                 }
                 $Param = @()
             }
@@ -118,5 +143,5 @@ Write-Output @"
 </gpx>
 "@ | Out-File -FilePath $Exportfile -Append -Encoding utf8
 Write-Progress -Completed -Activity "Done"
-$Time = (Get-date - $Starttime) -f "HH:mm:ss"
+$Time = ((Get-Date) - $Starttime) -f "HH:mm:ss"
 Write-Host "`r`nCompleted. $CntEntries GPX elemented written, $Time required"
