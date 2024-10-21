@@ -45,7 +45,12 @@ function process-line([string] $line) {
     # now building node elements
     #
     $Counter = 0
-    foreach($value in $Splitdata) {
+    $SplitMax = $Splitdata.Count
+    for($SplitCounter = 0;$Splitcounter -lt $SplitMax;$SplitCounter++) {
+        $value = $Splitdata[$SplitCounter]
+        if ($value -ne "" -and $value.Substring(0,1) -eq "'" -and $value.Substring($value.Length-1,1) -ne "'") {
+          $value = $value + $Splitdata[++$SplitCounter]
+        }
         $Counter++
         if (($Counter % 100) -eq 0) {
             Write-Progress -Activity "Deconstructing line of data" -Status "$param1" -PercentComplete ($Counter / $Splitdata.Count * 100) -ParentId 1 -Id 2
@@ -55,7 +60,9 @@ function process-line([string] $line) {
             if ($Param.Count -ge 10) {
                 $param1 = [string] $Param[1]
                 if ($param1.Substring(0,1) -eq "'") { $param1 = $param1.Substring(1,$param1.Length-2) }
-                if ($param1 -gt $DateEnd) { break }
+                if ($param1 -gt $DateEnd) { 
+                    break
+                }
                 if ($param1 -ge $DateStart) {
                     $Element += [PSCustomObject] [ordered] @{ "Date" = $param1; "Lat" = $param[2]; "Lng" = $param[3]; "Alt" = $param[10] }
                     #if ($element.Count % 100 -eq 0) { write-host "." -NoNewline -ForegroundColor Gray }
@@ -78,7 +85,7 @@ function process-line([string] $line) {
 # read data file and filter for SQL "insert into" commands
 Write-Host "Reading data from $Importfile into memory"
 $dataset = (Get-Content $Importfile -Encoding UTF8 | ? { $_ -like "INSERT INTO *"})
-Write-Host "Reading completed."
+Write-Host "Reading completed, found $($dataset.count) probably relevant lines"
 $datacounter = 0
 foreach($line in  $dataset) {
     Write-Progress -Activity "Processing data file $Importfile" -status "from $DateStart to $DateEnd" -PercentComplete (++$datacounter / $dataset.count * 100) -id 1
